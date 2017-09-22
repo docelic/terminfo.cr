@@ -15,6 +15,8 @@ module Terminfo
   end
 
   class Parser
+    MAGIC_NUMBER = 0x11A
+
     def self.from_io(io : IO, longnames = true)
       new(longnames).parse(io)
     end
@@ -27,9 +29,7 @@ module Terminfo
       # Note: all read operations (mainly io.read_bytes) can raises EOFError
 
       # Verify magic number
-      if read_i16(io) != 0x11A
-        raise "Not a terminfo database"
-      end
+      check_magic_number! io
 
       # Header
       header = parse_header io
@@ -54,6 +54,12 @@ module Terminfo
         numbers: numbers,
         strings: strings,
       )
+    end
+
+    def check_magic_number!(io)
+      if read_i16(io) != MAGIC_NUMBER
+        raise "Not a terminfo database"
+      end
     end
 
     def parse_header(io)
