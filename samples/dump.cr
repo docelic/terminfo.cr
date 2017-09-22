@@ -2,7 +2,11 @@
 
 require "../src/terminfo"
 
-ti = Terminfo.parse!
+unless term_name = ENV["TERM"]?
+    raise "No terminal set in environment variable TERM."
+end
+
+ti = Terminfo.from_term term_name
 
 puts "--> Terminal names:"
 ti.names.each do |name|
