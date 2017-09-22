@@ -1,7 +1,7 @@
 # Terminfo database discovery, compatible with ncurses.
 #
 # Does not support hashed database, only filesystem!
-module Searcher
+module Terminfo::Searcher
   # Returns the path to the terminfo database of terminal *term*.
   def self.dbpath_for_term(term : String)
     dirs_to_search = [] of String
