@@ -126,7 +126,7 @@ module Terminfo
   end
 
   def self.parse_terminfo(db_path, longnames = true)
-    name_length_key = (longnames ? :full : :short)
+    name_key = (longnames ? :full : :short)
 
     File.open db_path do |file|
       # Note: all read operations (mainly file.read_bytes) can raises EOFError
@@ -145,13 +145,13 @@ module Terminfo
       names = parse_names_section file, header
 
       # Bools section
-      bools = parse_bools_section file, header, name_length_key
+      bools = parse_bools_section file, header, name_key
 
       # Numbers section
-      numbers = parse_numbers_section file, header, name_length_key
+      numbers = parse_numbers_section file, header, name_key
 
       # String sections
-      strings = parse_strings_section file, header, name_length_key
+      strings = parse_strings_section file, header, name_key
 
       Database.new(
         names:   names,
