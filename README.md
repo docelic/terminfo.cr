@@ -1,6 +1,6 @@
 # terminfo
 
-TODO: Write a description here
+[WIP] A Crystal library to parse terminfo database 
 
 ## Installation
 
@@ -13,6 +13,8 @@ dependencies:
 ```
 
 ## Usage
+
+See [the samples](samples/) for usage examples.
 
 ```crystal
 require "terminfo"
