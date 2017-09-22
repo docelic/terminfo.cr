@@ -16,10 +16,18 @@ module Terminfo
       raise "No terminal set in environment variable TERM."
     end
 
+    parse_for_term term_name
+  end
+
+  def self.parse_for_term(term_name)
     unless db_path = Searcher.dbpath_for_term term_name
-      raise "terminfo database found for terminal #{term_name}"
+      raise "No terminfo database found for terminal #{term_name}"
     end
 
+    parse_db db_path
+  end
+
+  def self.parse_db(db_path)
     begin
       parse_terminfo db_path
     rescue ex : IO::EOFError
