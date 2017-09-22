@@ -28,10 +28,10 @@ module Terminfo
   end
 
   def self.parse_db(db_path)
-    begin
-      parse_terminfo db_path
-    rescue ex : IO::EOFError
-      raise FileTooShort.new "Unexpected end of file #{db_path.inspect}", db: db_path
+    File.open db_path do |file|
+      Parser.from_io file
     end
+  rescue ex : IO::EOFError
+    raise FileTooShort.new "Unexpected end of file #{db_path.inspect}", db: db_path
   end
 end
