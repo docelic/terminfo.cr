@@ -36,6 +36,10 @@ Compiled terminfo format man page: https://www.systutorials.com/docs/linux/man/5
 
 Source terminfo format: http://pubs.opengroup.org/onlinepubs/7908799/xcurses/terminfo.html (not used ATM)
 
+Full (almost) doc on terminfo, param strings, usages, etc.. [linux - man5 - terminfo](https://linux.die.net/man/5/terminfo)
+
+About [Control Functions, Escape Sequences, and VT-Keys](https://support2.microfocus.com/techdocs/1364.html) (not official, but still interesting!)
+[Control characters](https://en.wikipedia.org/wiki/Control_character)
 
 ### Misc
 
