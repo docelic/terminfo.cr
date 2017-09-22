@@ -1,0 +1,9 @@
+name: terminfo
+version: 0.1.0
+
+authors:
+  - Benoit de Chezelles <lesell_b@epitech.eu>
+
+crystal: 0.23.1
+
+license: MIT
