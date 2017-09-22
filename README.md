@@ -26,6 +26,21 @@ TODO: Write usage instructions here
 
 TODO: Write development instructions here
 
+### Used references
+
+[term (rust)](https://github.com/Stebalien/term): A Rust library for terminfo parsing and terminal colors.
+- [its parser](https://stebalien.github.io/doc/term/src/term/terminfo/parser/compiled.rs.html)
+- [its param parser/exec](https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html)
+
+Compiled terminfo format man page: https://www.systutorials.com/docs/linux/man/5-term/
+
+Source terminfo format: http://pubs.opengroup.org/onlinepubs/7908799/xcurses/terminfo.html (not used ATM)
+
+
+### Misc
+
+Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using term, see above)
+
 ## Contributing
 
 1. Fork it ( https://github.com/bew/terminfo.cr/fork )
