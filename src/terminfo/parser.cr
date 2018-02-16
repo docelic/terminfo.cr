@@ -86,15 +86,15 @@ module Terminfo
         raise "Invalid section size: strings"
       end
 
-      if header.bools_size > BoolNames.size
+      if header.bools_size > Names::Booleans.size
         raise "Too many bool"
       end
 
-      if header.numbers_count > NumNames.size
+      if header.numbers_count > Names::Numbers.size
         raise "Too many numbers"
       end
 
-      if header.string_offsets_count > StringNames.size
+      if header.string_offsets_count > Names::Strings.size
         raise "Too many strings"
       end
     end
@@ -127,7 +127,7 @@ module Terminfo
       bools = Hash(String, Bool).new(initial_capacity: header.bools_size)
       bools_section.each_with_index do |value, idx|
         if value == 1
-          key = BoolNames[idx][@name_key]
+          key = Names::Booleans[idx][@name_key]
           bools[key] = true
         end
       end
@@ -140,7 +140,7 @@ module Terminfo
       header.numbers_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          key = NumNames[idx][@name_key]
+          key = Names::Numbers[idx][@name_key]
           numbers[key] = value
         end
       end
@@ -154,7 +154,7 @@ module Terminfo
       header.string_offsets_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          key = StringNames[idx][@name_key]
+          key = Names::Strings[idx][@name_key]
           string_offsets[key] = value
         elsif value < -1
           raise "Invalid string offset"

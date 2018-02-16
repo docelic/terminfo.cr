@@ -1,5 +1,5 @@
-module Terminfo
-  BoolNames = [
+module Terminfo::Names
+  Booleans = [
     {full: "auto_left_margin", short: "bw"},
     {full: "auto_right_margin", short: "am"},
     {full: "no_esc_ctlc", short: "xsb"},
@@ -46,7 +46,7 @@ module Terminfo
     {full: "return_does_clr_eol", short: "OTxr"},
   ]
 
-  NumNames = [
+  Numbers = [
     {full: "columns", short: "cols"},
     {full: "init_tabs", short: "it"},
     {full: "lines", short: "lines"},
@@ -88,7 +88,7 @@ module Terminfo
     {full: "number_of_function_keys", short: "OTkn"},
   ]
 
-  StringNames = [
+  Strings = [
     {full: "back_tab", short: "cbt"},
     {full: "bell", short: "bel"},
     {full: "carriage_return", short: "cr"},
