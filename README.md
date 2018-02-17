@@ -1,6 +1,6 @@
 # terminfo
 
-[WIP] A Crystal library to parse terminfo database 
+[WIP] A Crystal library to parse terminfo database
 
 ## Installation
 

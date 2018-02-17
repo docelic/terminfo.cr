@@ -50,7 +50,7 @@ module Terminfo
 
       Database.new(
         names: names,
-        bools: bools,
+        booleans: bools,
         numbers: numbers,
         strings: strings,
       )
@@ -86,15 +86,15 @@ module Terminfo
         raise "Invalid section size: strings"
       end
 
-      if header.bools_size > Names::Booleans.size
+      if header.bools_size > KeyNames::Booleans.size
         raise "Too many bool"
       end
 
-      if header.numbers_count > Names::Numbers.size
+      if header.numbers_count > KeyNames::Numbers.size
         raise "Too many numbers"
       end
 
-      if header.string_offsets_count > Names::Strings.size
+      if header.string_offsets_count > KeyNames::Strings.size
         raise "Too many strings"
       end
     end
@@ -124,11 +124,10 @@ module Terminfo
 
       # > The boolean flags have one byte for each flag.
       # So bools_size is the number of bools for this terminfo.
-      bools = Hash(String, Bool).new(initial_capacity: header.bools_size)
+      bools = Hash(Int32, Bool).new(initial_capacity: header.bools_size)
       bools_section.each_with_index do |value, idx|
         if value == 1
-          key = Names::Booleans[idx][@name_key]
-          bools[key] = true
+          bools[idx] = true
         end
       end
 
@@ -136,12 +135,11 @@ module Terminfo
     end
 
     def parse_numbers_section(io, header)
-      numbers = Hash(String, Int16).new(initial_capacity: header.numbers_count)
+      numbers = Hash(Int32, Int16).new(initial_capacity: header.numbers_count)
       header.numbers_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          key = Names::Numbers[idx][@name_key]
-          numbers[key] = value
+          numbers[idx.to_i32] = value
         end
       end
 
@@ -150,12 +148,11 @@ module Terminfo
 
     def parse_strings_section(io, header)
       # collect string offsets
-      string_offsets = Hash(String, Int16).new(initial_capacity: header.string_offsets_count)
+      string_offsets = Hash(Int32, Int16).new(initial_capacity: header.string_offsets_count)
       header.string_offsets_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          key = Names::Strings[idx][@name_key]
-          string_offsets[key] = value
+          string_offsets[idx.to_i32] = value
         elsif value < -1
           raise "Invalid string offset"
         end
@@ -164,14 +161,14 @@ module Terminfo
       string_table_section = Bytes.new(header.string_table_size)
       io.read_fully(string_table_section)
 
-      strings = Hash(String, Bytes).new(initial_capacity: header.string_offsets_count)
-      string_offsets.each do |key, offset|
+      strings = Hash(Int32, Bytes).new(initial_capacity: header.string_offsets_count)
+      string_offsets.each do |str_idx, offset|
         unless nul_index = string_table_section.index('\0'.ord, offset: offset)
           raise "String table too short (#{offset} out of bounds or no NUL at end of string)"
         end
 
         length = nul_index - offset
-        strings[key] = string_table_section[offset, count: length]
+        strings[str_idx] = string_table_section[offset, count: length]
       end
 
       strings

@@ -1,4 +1,4 @@
-module Terminfo::Names
+module Terminfo::KeyNames
   Booleans = [
     {full: "auto_left_margin", short: "bw"},
     {full: "auto_right_margin", short: "am"},
@@ -504,4 +504,26 @@ module Terminfo::Names
     {full: "memory_unlock", short: "memu"},
     {full: "box_chars_1", short: "box1"},
   ]
+
+  @@boolean_idx_cache = {} of String => Int32?
+  @@number_idx_cache = {} of String => Int32?
+  @@string_idx_cache = {} of String => Int32?
+
+  def self.idx_for_boolean?(name : String)
+    @@boolean_idx_cache[name] ||= Booleans.index do |keys|
+      name == keys[:full] || name == keys[:short]
+    end
+  end
+
+  def self.idx_for_number?(name : String)
+    @@number_idx_cache[name] ||= Numbers.index do |keys|
+      name == keys[:full] || name == keys[:short]
+    end
+  end
+
+  def self.idx_for_string?(name : String)
+    @@string_idx_cache[name] ||= Strings.index do |keys|
+      name == keys[:full] || name == keys[:short]
+    end
+  end
 end
