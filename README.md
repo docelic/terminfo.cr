@@ -41,6 +41,8 @@ Full (almost) doc on terminfo, param strings, usages, etc.. [linux - man5 - term
 About [Control Functions, Escape Sequences, and VT-Keys](https://support2.microfocus.com/techdocs/1364.html) (not official, but still interesting!)
 [Control characters](https://en.wikipedia.org/wiki/Control_character)
 
+Full XTerm Control Sequences doc: http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
 ### Misc
 
 Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using term, see above)
