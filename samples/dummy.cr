@@ -2,12 +2,28 @@
 
 require "../src/terminfo"
 
+alias TiBooleans = Terminfo::Keys::Booleans
+alias TiNumbers = Terminfo::Keys::Numbers
+alias TiStrings = Terminfo::Keys::Strings
+
 ti = Terminfo::Database.new_empty
 
-ti.set_boolean "has_meta_key", true
-pp ti.get_boolean? "has_meta_key"
+ti.set TiBooleans::HasMetaKey, true
+pp ti.get! TiBooleans::HasMetaKey
 
-ti.set_boolean "xon_xoff", false
-pp ti.get_boolean? "xon_xoff"
+ti.set TiBooleans::XonXoff, false
+pp ti.get! TiBooleans::XonXoff
 
-pp ti.get_boolean? "invalid_key"
+# NOTE: in the specs, don't forget to test key.valid? for the last key!
+ti.set TiBooleans::ReturnDoesClrEol, true
+pp ti.get! TiBooleans::ReturnDoesClrEol
+
+invalid_bool_key = TiBooleans.new(9999)
+pp ti.get? invalid_bool_key
+
+
+ti.set TiNumbers::Lines, 42_i16
+pp ti.get! TiNumbers::Lines
+
+ti.set TiStrings::CursorHome, Bytes[0, 1, 2]
+pp ti.get! TiStrings::CursorHome

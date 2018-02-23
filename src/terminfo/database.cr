@@ -18,36 +18,38 @@ module Terminfo
     private def initialize
     end
 
-    {% for ti_type, cr_type in {boolean: Bool, number: Int16, string: String } %}
-      # TODO: doc
-      def get_{{ ti_type.id }}?(key : String)
-        if idx = KeyNames.idx_for_boolean? key
-          @booleans[idx]?
+    {% for key_type, cr_type in {Booleans: Bool, Numbers: Int16, Strings: Bytes} %}
+      # Gets the `{{ cr_type }}` value for the key *key*, or `nil` if not set.
+      def get?(key : Keys::{{ key_type.id }})
+        if key.valid?
+          @{{ key_type.id.downcase }}[key.value]?
         end
       end
 
-      # TODO: doc
-      def get_{{ ti_type.id }}!(key : String)
-        get_{{ ti_type.id }}?(key) || raise InvalidKeyError.new(key, {{ ti_type.id.stringify }})
+      # Gets the `{{ cr_type }}` value for the key *key*, raises an InvalidKeyError if not set.
+      def get!(key : Keys::{{ key_type.id }})
+        if (value = get?(key)).nil?
+          raise InvalidKeyError.new(key)
+        end
+        value
       end
 
-      # TODO: doc
-      def set_{{ ti_type.id }}(key : String, value : {{ cr_type.id }})
-        if idx = KeyNames.idx_for_{{ ti_type.id }}? key
-          @booleans[idx] = value
+      # Sets key *key* to value *value*, raises InvalidKeyError if *key* is invalid.
+      def set(key : Keys::{{ key_type.id }}, value : {{ cr_type }})
+        if key.valid?
+          @{{ key_type.id.downcase }}[key.value] = value
         else
-          raise InvalidKeyError.new(key, {{ ti_type.id.stringify }})
+          raise InvalidKeyError.new(key)
         end
       end
     {% end %}
   end
 
   class InvalidKeyError < Exception
-    getter key : String
-    getter type : String
+    getter key : Keys::Booleans | Keys::Numbers | Keys::Strings
 
-    def initialize(@key, @type)
-      super "Invalid terminfo key '#{key}' for type '#{type}'"
+    def initialize(@key)
+      super "Invalid terminfo key '#{key}'"
     end
   end
 end
