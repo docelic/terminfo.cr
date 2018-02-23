@@ -28,6 +28,8 @@ TODO: Write development instructions here
 
 ### Used references
 
+[unibilium](https://github.com/mauke/unibilium)
+
 [term (rust)](https://github.com/Stebalien/term): A Rust library for terminfo parsing and terminal colors.
 - [its parser](https://stebalien.github.io/doc/term/src/term/terminfo/parser/compiled.rs.html)
 - [its param parser/exec](https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html)
