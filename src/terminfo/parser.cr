@@ -124,10 +124,11 @@ module Terminfo
 
       # > The boolean flags have one byte for each flag.
       # So bools_size is the number of bools for this terminfo.
-      bools = Hash(Int32, Bool).new(initial_capacity: header.bools_size)
+      bools = Hash(Keys::Booleans, Bool).new(initial_capacity: header.bools_size)
       bools_section.each_with_index do |value, idx|
         if value == 1
-          bools[idx] = true
+          bool_key = Keys::Booleans.from_value idx
+          bools[bool_key] = true
         end
       end
 
@@ -135,11 +136,12 @@ module Terminfo
     end
 
     def parse_numbers_section(io, header)
-      numbers = Hash(Int32, Int16).new(initial_capacity: header.numbers_count)
+      numbers = Hash(Keys::Numbers, Int16).new(initial_capacity: header.numbers_count)
       header.numbers_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          numbers[idx.to_i32] = value
+          num_key = Keys::Numbers.from_value idx.to_i32
+          numbers[num_key] = value
         end
       end
 
@@ -148,11 +150,12 @@ module Terminfo
 
     def parse_strings_section(io, header)
       # collect string offsets
-      string_offsets = Hash(Int32, Int16).new(initial_capacity: header.string_offsets_count)
+      string_offsets = Hash(Keys::Strings, Int16).new(initial_capacity: header.string_offsets_count)
       header.string_offsets_count.times do |idx|
         value = read_i16(io)
         if value != -1
-          string_offsets[idx.to_i32] = value
+          str_key = Keys::Strings.from_value idx.to_i32
+          string_offsets[str_key] = value
         elsif value < -1
           raise "Invalid string offset"
         end
@@ -161,14 +164,14 @@ module Terminfo
       string_table_section = Bytes.new(header.string_table_size)
       io.read_fully(string_table_section)
 
-      strings = Hash(Int32, Bytes).new(initial_capacity: header.string_offsets_count)
-      string_offsets.each do |str_idx, offset|
+      strings = Hash(Keys::Strings, Bytes).new(initial_capacity: header.string_offsets_count)
+      string_offsets.each do |str_key, offset|
         unless nul_index = string_table_section.index('\0'.ord, offset: offset)
           raise "String table too short (#{offset} out of bounds or no NUL at end of string)"
         end
 
         length = nul_index - offset
-        strings[str_idx] = string_table_section[offset, count: length]
+        strings[str_key] = string_table_section[offset, count: length]
       end
 
       strings

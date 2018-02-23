@@ -3,16 +3,16 @@ require "./names"
 module Terminfo
 
   class Database
-    def self.new_empty
-      new
-    end
-
     getter names = Array(String).new
-    getter booleans = Hash(Int32, Bool).new(initial_capacity: KeyNames::Booleans.size)
-    getter numbers = Hash(Int32, Int16).new(initial_capacity: KeyNames::Numbers.size)
-    getter strings = Hash(Int32, Bytes).new(initial_capacity: KeyNames::Strings.size)
+    getter booleans = Hash(Keys::Booleans, Bool).new(initial_capacity: KeyNames::Booleans.size)
+    getter numbers = Hash(Keys::Numbers, Int16).new(initial_capacity: KeyNames::Numbers.size)
+    getter strings = Hash(Keys::Strings, Bytes).new(initial_capacity: KeyNames::Strings.size)
 
     def initialize(@names, @booleans, @numbers, @strings)
+    end
+
+    def self.new_empty
+      new
     end
 
     private def initialize
@@ -22,7 +22,7 @@ module Terminfo
       # Gets the `{{ cr_type }}` value for the key *key*, or `nil` if not set.
       def get?(key : Keys::{{ key_type.id }})
         if key.valid?
-          @{{ key_type.id.downcase }}[key.value]?
+          @{{ key_type.id.downcase }}[key]?
         end
       end
 
@@ -37,7 +37,7 @@ module Terminfo
       # Sets key *key* to value *value*, raises InvalidKeyError if *key* is invalid.
       def set(key : Keys::{{ key_type.id }}, value : {{ cr_type }})
         if key.valid?
-          @{{ key_type.id.downcase }}[key.value] = value
+          @{{ key_type.id.downcase }}[key] = value
         else
           raise InvalidKeyError.new(key)
         end
