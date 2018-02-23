@@ -2,10 +2,8 @@
 #
 # Does not support hashed database, only filesystem!
 module Terminfo::Searcher
-  # Returns the path to the terminfo database of terminal *term*.
-  def self.dbpath_for_term(term : String)
-    dirs_to_search = [] of String
-
+  # Yields each directories in which to search for the compiled terminfo.
+  def self.each_directories
     # Find search directory
     # The terminfo manual says:
     #
@@ -21,15 +19,15 @@ module Terminfo::Searcher
     #
     # Given that ncurses is the defacto standard, we follow the ncurses manual.
     if dir = ENV["TERMINFO"]?
-      dirs_to_search << dir
+      yield dir
     end
 
     if dirs = ENV["TERMINFO_DIRS"]?
       dirs.split(':').each do |dir|
         if dir.empty?
-          dirs_to_search << "/usr/share/terminfo"
+          yield "/usr/share/terminfo"
         else
-          dirs_to_search << dir
+          yield dir
         end
       end
     else
@@ -39,17 +37,20 @@ module Terminfo::Searcher
       # /lib/terminfo, and eventually /usr/share/terminfo.
       # On Haiku the database can be found at /boot/system/data/terminfo
       if home_dir = ENV["HOME"]?
-        dirs_to_search << File.join(home_dir, ".terminfo")
+        yield File.join(home_dir, ".terminfo")
       end
 
-      dirs_to_search << "/etc/terminfo"
-      dirs_to_search << "/lib/terminfo"
-      dirs_to_search << "/usr/share/terminfo"
-      dirs_to_search << "/boot/system/data/terminfo"
+      yield "/etc/terminfo"
+      yield "/lib/terminfo"
+      yield "/usr/share/terminfo"
+      yield "/boot/system/data/terminfo"
     end
+  end
 
+  # Returns the path to the terminfo database of terminal *term*.
+  def self.dbpath_for_term(term : String)
     # Look for the terminal in all of the search directories
-    dirs_to_search.each do |dir|
+    each_directories do |dir|
       next unless Dir.exists? dir
 
       term_path = File.join(dir, term[0].to_s, term)
