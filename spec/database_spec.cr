@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-alias Ti = Terminfo
+private alias Ti = Terminfo
 
 private def new_dummy
   ti = Ti::Database.new_empty
