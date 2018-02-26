@@ -23,9 +23,11 @@ module Terminfo::Searcher
     end
 
     if dirs = ENV["TERMINFO_DIRS"]?
+      standard_given = false
       dirs.split(':').each do |dir|
         if dir.empty?
-          yield "/usr/share/terminfo"
+          yield "/usr/share/terminfo" unless standard_given
+          standard_given = true
         else
           yield dir
         end
