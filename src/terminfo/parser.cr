@@ -18,10 +18,6 @@ module Terminfo
   end
 
   class Parser
-    def self.from_io(io : IO)
-      new.parse(io)
-    end
-
     def parse(io : IO)
       # NOTE: all read operations (mainly io.read_bytes) can raises EOFError
 

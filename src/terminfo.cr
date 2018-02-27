@@ -22,7 +22,7 @@ module Terminfo
 
   def self.from_file(db_path)
     File.open db_path do |file|
-      Parser.from_io file
+      Parser.new.parse file
     end
   rescue ex : IO::EOFError
     raise FileTooShort.new db_path
