@@ -1,6 +1,6 @@
 # terminfo
 
-[WIP] A Crystal library to parse terminfo database
+[WIP] A Crystal library to parse and use terminfo database
 
 ## Installation
 
@@ -33,6 +33,12 @@ TODO: Write development instructions here
 [term (rust)](https://github.com/Stebalien/term): A Rust library for terminfo parsing and terminal colors.
 - [its parser](https://stebalien.github.io/doc/term/src/term/terminfo/parser/compiled.rs.html)
 - [its param parser/exec](https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html)
+
+[terminfo (go)](https://github.com/xo/terminfo/): Terminfo for Go
+- [parametizer](https://github.com/xo/terminfo/blob/master/param.go)
+
+[rust-terminfo (rust)](https://github.com/meh/rust-terminfo/): Terminfo for Rust
+- [param expander](https://github.com/meh/rust-terminfo/blob/master/src/expand.rs): It uses a kind of iterator producing states, and switching on each state.
 
 Compiled terminfo format man page: https://www.systutorials.com/docs/linux/man/5-term/
 
