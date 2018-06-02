@@ -20,6 +20,7 @@ pp ti.get! TiBooleans::ReturnDoesClrEol
 
 invalid_bool_key = TiBooleans.new(9999)
 pp ti.get? invalid_bool_key
+pp invalid_bool_key.valid?
 
 
 ti.set TiNumbers::Lines, 42_i16
