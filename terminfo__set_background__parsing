@@ -1,0 +1,48 @@
+setb=%?%p1%{7}%>%t\E[48;5;%p1%dm%e\E[4%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m%;
+
+# Doc: http://invisible-island.net/ncurses/man/terminfo.5.html#h3-Parameterized-Strings
+
+setb=
+  %?          # start new if
+    %p1       # stack.push arg1
+    %{7}      # stack.push 7
+    %>        # stack.push(stack.pop > stack.pop)    # pop are in reverse order
+
+  %t          # if arg1 > 7           (if stack.pop != 0)
+    \E[48;5;  #   print '\E[48;5;'
+    %p1       #   stack.push arg1
+    %d        #   print stack.pop
+    m         #   print 'm'
+  %e          # else
+    \E[4      #   print '\E[4'
+
+    %?        #   start new if
+      %p1     #   stack.push arg1
+      %{1}    #   stack.push 1
+      %=      #   stack.push(stack.pop > stack.pop)    # pop are in reverse order
+    %t        #   if arg1 == 1        (if stack.pop != 0)
+      4       #     print '4'
+    %e        #   else
+      %p1
+      %{3}
+      %=
+    %t        #   if arg1 == 3        (if stack.pop != 0)
+      6       #     print '6'
+    %e        #   else
+      %p1
+      %{4}
+      %=
+    %t        #   if arg1 == 4        (if stack.pop != 0)
+      1       #     print '1'
+    %e        #   else
+      %p1
+      %{6}
+      %=
+    %t        #   if arg1 == 6        (if stack.pop != 0)
+      3       #     print '3'
+    %e        #   else
+      %p1     #     stack.push arg1
+      %d      #     print arg1
+    %;        #   endif
+    m         #   print 'm'
+  %;          # endif
