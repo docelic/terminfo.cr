@@ -1,6 +1,8 @@
-# terminfo
+# terminfo - WIP - API NOT STABLE AT ALL!
 
 [WIP] A Crystal library to parse and use terminfo database
+
+DO NOT USE, the API might change!
 
 ## Installation
 
@@ -14,17 +16,33 @@ dependencies:
 
 ## Usage
 
-See [the samples](samples/) for usage examples.
+See [the samples](samples/) and the [database specs](spec/database_spec.cr) for up-to-date usage examples.
 
 ```crystal
 require "terminfo"
-```
 
-TODO: Write usage instructions here
+# do stuff..
+```
 
 ## Development
 
-TODO: Write development instructions here
+Also see [dev notes](Notes.md).
+
+### Progress
+
+**Done**:
+- Search terminfo database in standards directories from the terminal name
+- Terminfo database parsing to a `Terminfo::Database` object (extracts all standards number/boolean/string capabilities)
+- Get/Set number/boolean/string capabilities
+
+**TODO**:
+- Parameterized string parser & executor (see references below)
+- Documentation
+- Parser specs
+- Allow to generate a terminfo database from a Terminfo object (to be used in parser specs)
+- Allow to parse & query/set terminfo extensions (non-standards capabilities)
+- (maybe) Make names database (`src/terminfo/names.cr`) less memory hungry?
+- ...
 
 ### Used references
 
@@ -53,7 +71,7 @@ Full XTerm Control Sequences doc: http://invisible-island.net/xterm/ctlseqs/ctls
 
 ### Misc
 
-Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using term, see above)
+Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using `term`, see above)
 
 ## Contributing
 
@@ -62,6 +80,8 @@ Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using term, see 
 3. Commit your changes (git commit -am 'Add some feature')
 4. Push to the branch (git push origin my-new-feature)
 5. Create a new Pull Request
+
+Also, feel free to open an issue for anything (feature idea, implementation idea, or just discuss about the project).
 
 ## Contributors
 

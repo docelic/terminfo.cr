@@ -2,7 +2,7 @@ require "./spec_helper"
 
 private def collect_directories
   ary = [] of String
-  Terminfo::Searcher.each_directories do |dir|
+  Terminfo::Searcher.each_std_directories do |dir|
     ary << dir
   end
   ary

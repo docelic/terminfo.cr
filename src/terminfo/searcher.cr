@@ -3,7 +3,7 @@
 # Does not support hashed database, only filesystem!
 module Terminfo::Searcher
   # Yields each directories in which to search for the compiled terminfo.
-  def self.each_directories
+  def self.each_std_directories
     # Find search directory
     # The terminfo manual says:
     #
@@ -52,7 +52,7 @@ module Terminfo::Searcher
   # Returns the path to the terminfo database of terminal *term*.
   def self.dbpath_for_term(term : String)
     # Look for the terminal in all of the search directories
-    each_directories do |dir|
+    each_std_directories do |dir|
       next unless Dir.exists? dir
 
       term_path = File.join(dir, term[0].to_s, term)

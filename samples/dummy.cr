@@ -26,5 +26,12 @@ pp invalid_bool_key.valid?
 ti.set TiNumbers::Lines, 42_i16
 pp ti.get! TiNumbers::Lines
 
+# Using Crystal v0.25's literal resolver we can write:
+ti.set :lines, 42
+pp ti.get! :lines
+
 ti.set TiStrings::CursorHome, Bytes[0, 1, 2]
 pp ti.get! TiStrings::CursorHome
+
+
+

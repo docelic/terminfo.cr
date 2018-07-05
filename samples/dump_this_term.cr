@@ -3,7 +3,8 @@
 require "../src/terminfo"
 
 unless term_name = ENV["TERM"]?
-  raise "No terminal set in environment variable TERM."
+  STDERR.puts "No terminal set in environment variable TERM."
+  exit 1
 end
 
 ti = Terminfo.from_term term_name
@@ -33,4 +34,3 @@ ti.strings.each do |idx, bytes|
   key = Terminfo::KeyNames::Strings[idx.value][:full]
   puts "  #{key} = #{String.new(bytes).inspect}"
 end
-
