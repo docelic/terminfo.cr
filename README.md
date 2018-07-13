@@ -54,7 +54,7 @@ Also see [dev notes](Notes.md).
 - [its param parser/exec](https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html)
 
 [terminfo (go)](https://github.com/xo/terminfo/): Terminfo for Go
-- [parametizer](https://github.com/xo/terminfo/blob/master/param.go)
+- [parametizer](https://github.com/xo/terminfo/blob/master/param.go): It uses function pointer, to decide what the next action will be.
 
 [rust-terminfo (rust)](https://github.com/meh/rust-terminfo/): Terminfo for Rust
 - [param expander](https://github.com/meh/rust-terminfo/blob/master/src/expand.rs): It uses a kind of iterator producing states, and switching on each state.
