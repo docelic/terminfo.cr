@@ -4,11 +4,11 @@ module Terminfo
   class Error < Exception
   end
 
-  class FileTooShort < Error
+  class ReadError < Error
     getter db_path : String
 
-    def initialize(@db_path)
-      super "Unexpected end of file #{db_path.inspect}"
+    def initialize(@db_path, cause = nil)
+      super %(Unexpected end of file "#{@db_path}"), cause
     end
   end
 
@@ -25,6 +25,6 @@ module Terminfo
       Parser.new.parse file
     end
   rescue ex : IO::EOFError
-    raise FileTooShort.new db_path
+    raise ReadError.new db_path, cause: ex
   end
 end
