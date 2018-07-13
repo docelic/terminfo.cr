@@ -7,7 +7,9 @@ unless term_name = ENV["TERM"]?
   exit 1
 end
 
-ti = Terminfo.from_term term_name
+ti, db_path = Terminfo.from_term term_name
+puts "Database file: #{db_path}"
+puts
 
 puts "--> Terminal names:"
 ti.names.each do |name|

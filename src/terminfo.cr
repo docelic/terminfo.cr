@@ -17,7 +17,7 @@ module Terminfo
       raise "No terminfo database found for terminal #{term_name}"
     end
 
-    from_file db_path
+    {from_file(db_path), db_path}
   end
 
   def self.from_file(db_path)
