@@ -82,7 +82,7 @@ module Terminfo
       end
 
       if header.bools_count > KeyNames::Booleans.size
-        parse_error "Too many bool"
+        parse_error "Too many bools"
       end
 
       if header.numbers_count > KeyNames::Numbers.size
@@ -118,7 +118,7 @@ module Terminfo
       end
 
       # > The boolean flags have one byte for each flag.
-      # So bools_count is the number of bools for this terminfo.
+      # So bools_count is the number of bools for this database.
       bools = Hash(Keys::Booleans, Bool).new(initial_capacity: header.bools_count)
       bools_section.each_with_index do |value, idx|
         if value == 1

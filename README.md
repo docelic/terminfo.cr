@@ -42,6 +42,7 @@ Also see [dev notes](Notes.md).
 - Allow to generate a terminfo database from a Terminfo object (to be used in parser specs)
 - Allow to parse & query/set terminfo extensions (non-standards capabilities)
 - (maybe) Make names database (`src/terminfo/names.cr`) less memory hungry?
+- Find a good API!!! (test small projects for that)
 - ...
 
 ### Used references
@@ -49,7 +50,7 @@ Also see [dev notes](Notes.md).
 [unibilium](https://github.com/mauke/unibilium)
 
 [term (rust)](https://github.com/Stebalien/term): A Rust library for terminfo parsing and terminal colors.
-- [its parser](https://stebalien.github.io/doc/term/src/term/terminfo/parser/compiled.rs.html)
+- [its database parser](https://stebalien.github.io/doc/term/src/term/terminfo/parser/compiled.rs.html)
 - [its param parser/exec](https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html)
 
 [terminfo (go)](https://github.com/xo/terminfo/): Terminfo for Go
@@ -81,7 +82,7 @@ Cool lib [termfest (rust)](https://github.com/agatan/termfest) (using `term`, se
 4. Push to the branch (git push origin my-new-feature)
 5. Create a new Pull Request
 
-Also, feel free to open an issue for anything (feature idea, implementation idea, or just discuss about the project).
+Also, feel free to open an issue for anything (feature idea, implementation idea, just discuss about the project).
 
 ## Contributors
 
