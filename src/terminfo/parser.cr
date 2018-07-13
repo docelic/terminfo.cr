@@ -6,20 +6,20 @@ module Terminfo
   end
 
   class Header
-    getter names_count : Int16
+    getter names_bytesize : Int16
     getter bools_count : Int16
     getter numbers_count : Int16
     getter string_offsets_count : Int16
     getter string_table_size : Int16
 
-    def initialize(@names_count, @bools_count, @numbers_count,
+    def initialize(@names_bytesize, @bools_count, @numbers_count,
                    @string_offsets_count, @string_table_size)
     end
   end
 
   class Parser
     def parse(io : IO)
-      # NOTE: all read operations (mainly io.read_bytes) can raises EOFError
+      # NOTE: all read operations can raises IO::EOFError
 
       # Verify magic number
       check_magic_number! io
@@ -58,14 +58,14 @@ module Terminfo
     end
 
     def parse_header(io)
-      names_count = read_i16(io)
+      names_bytesize = read_i16(io)
       bools_count = read_i16(io)
       numbers_count = read_i16(io)
       string_offsets_count = read_i16(io)
       string_table_size = read_i16(io)
 
       Header.new(
-        names_count: names_count,
+        names_bytesize: names_bytesize,
         bools_count: bools_count,
         numbers_count: numbers_count,
         string_offsets_count: string_offsets_count,
@@ -74,7 +74,7 @@ module Terminfo
     end
 
     def validate_header!(header)
-      parse_error "Invalid section size: names" if header.names_count <= 0
+      parse_error "Invalid section size: names" if header.names_bytesize <= 0
       parse_error "Invalid section size: bools" if header.bools_count < 0
       parse_error "Invalid section size: numbers" if header.numbers_count < 0
       if header.string_offsets_count < 0 || header.string_table_size < 0
@@ -99,7 +99,7 @@ module Terminfo
     end
 
     def parse_names_section(io, header)
-      names_section = Bytes.new(header.names_count)
+      names_section = Bytes.new(header.names_bytesize)
       io.read_fully(names_section)
 
       String.new(names_section).split '|'
