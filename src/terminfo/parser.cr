@@ -35,6 +35,14 @@ module Terminfo
       # Bools section
       bools = parse_bools_section io, header
 
+      # Compensate for padding
+      # > Between the boolean section and the number section, a null byte will
+      # > be inserted, if necessary, to ensure that the number section begins on
+      # > an even byte.
+      if (header.names_bytesize + header.bools_count) % 2 != 0
+        io.skip(1)
+      end
+
       # Numbers section
       numbers = parse_numbers_section io, header
 
@@ -99,6 +107,7 @@ module Terminfo
     end
 
     def parse_names_section(io, header)
+      # NOTE: header.names_bytesize contains the last ASCII NUL
       names_section = Bytes.new(header.names_bytesize)
       io.read_fully(names_section)
 
@@ -108,14 +117,6 @@ module Terminfo
     def parse_bools_section(io, header)
       bools_section = Bytes.new(header.bools_count)
       io.read_fully(bools_section)
-
-      # Compensate for padding
-      # > Between the boolean section and the number section, a null byte will
-      # > be inserted, if necessary, to ensure that the number section begins on
-      # > an even byte.
-      if (header.names_count + header.bools_count) % 2 != 0
-        io.skip(1)
-      end
 
       # > The boolean flags have one byte for each flag.
       # So bools_count is the number of bools for this database.
