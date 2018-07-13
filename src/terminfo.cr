@@ -1,4 +1,4 @@
-require "./terminfo/*"
+require "./*"
 
 module Terminfo
   class Error < Exception
