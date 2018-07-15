@@ -176,27 +176,38 @@ module Terminfo::Expansion
       return nil if io.pos == io.bytesize # no more char
 
       initial_pos = io.pos
-      case byte = io.read_byte
+      case byte = peek_byte!(io)
       when '%'.ord
-        case byte = io.read_byte
+        io.skip(1) # skip %
+
+        case byte = peek_byte!(io)
         when '%'.ord
+          io.skip(1) # skip %
+
           # outputs '%'
           Token::RawText.new "%".to_slice
         when 'c'.ord
+          io.skip(1) # skip c
+
           # print pop() like %c in printf
           Token::FormattedPrint.new :chr
         when 's'.ord
+          io.skip(1) # skip s
+
           # print pop() like %s in printf
           Token::FormattedPrint.new :str
         when 'p'.ord # %p[1-9]
+          io.skip(1) # skip p
+
           # push i'th parameter
           if '1'.ord <= (byte = read_byte!(io)) <= '9'.ord
             Token::PushParameter.new name: byte
           else
             raise Error::InvalidParameterNum.new byte
           end
-
         when 'P'.ord # %P[a-z]
+          io.skip(1) # skip P
+
           # set dynamic variable [a-z] to pop()
           if 'a'.ord <= (byte = read_byte!(io)) <= 'z'.ord
             Token::SetVar.new name: byte, to: :dynamic
@@ -205,6 +216,8 @@ module Terminfo::Expansion
           end
 
         when 'g'.ord # %g[a-z]
+          io.skip(1) # skip g
+
           # get dynamic variable [a-z] and push it
           if 'a'.ord <= (byte = read_byte!(io)) <= 'z'.ord
             Token::GetVar.new name: byte, from: :dynamic
@@ -213,14 +226,18 @@ module Terminfo::Expansion
           end
 
         when 'P'.ord # %P[A-Z]
+          io.skip(1) # skip P
+
           # set static variable [a-z] to pop()
           if 'A'.ord <= (byte = read_byte!(io)) <= 'Z'.ord
-            Token::SetVar.new name: byte, to: :dynamic
+            Token::SetVar.new name: byte, to: :static
           else
             raise Error::InvalidVariableName.new byte
           end
 
         when 'g'.ord # %g[A-Z]
+          io.skip(1) # skip g
+
           # get static variable [a-z] and push it
           # The terms "static" and "dynamic" are misleading. Historically, these
           # are simply two different sets of variables, whose values are not reset
@@ -235,6 +252,8 @@ module Terminfo::Expansion
           end
 
         when '\''.ord # %'c'
+          io.skip(1) # skip '
+
           # char constant c
           byte = read_byte!(io)
           unless read_byte!(io) == '\''.ord
@@ -243,6 +262,8 @@ module Terminfo::Expansion
           Token::PushIntConstant.new byte.to_i
 
         when '{'.ord # %{nn}
+          io.skip(1) # skip {
+
           # integer constant nn (any numbers between { and })
           int_start = io.pos
           int_length = 0
@@ -265,12 +286,14 @@ module Terminfo::Expansion
           end
 
         when 'l'.ord # %l
+          io.skip(1) # skip l
+
           # push strlen(pop())
           Token::Strlen.new
 
         when '+'.ord, '-'.ord, '*'.ord, '/'.ord, 'm'.ord # %+ %- %* %/ %m
           # arithmetic (%m is mod): push(pop() op pop())
-          case byte
+          case op = read_byte!(io)
           when '+'.ord
             Token::Binary.new :add
           when '-'.ord
@@ -286,7 +309,7 @@ module Terminfo::Expansion
           end
         when '&'.ord, '|'.ord, '^'.ord # %& %| %^
           # bit operations (AND, OR and exclusive-OR): push(pop() op pop())
-          case byte
+          case op = read_byte!(io)
           when '&'.ord
             Token::Binary.new :and
           when '|'.ord
@@ -298,7 +321,7 @@ module Terminfo::Expansion
           end
         when '='.ord, '>'.ord, '<'.ord # %= %> %<
           # logical operations: push(pop() op pop())
-          case byte
+          case op = read_byte!(io)
           when '='.ord
             Token::Binary.new :equal
           when '>'.ord
@@ -310,7 +333,7 @@ module Terminfo::Expansion
           end
         when 'A'.ord, 'O'.ord # %A, %O
           # logical AND and OR operations (for conditionals)
-          case byte
+          case op = read_byte!(io)
           when 'A'.ord
             Token::Binary.new :logical_and
           when '0'.ord
@@ -320,7 +343,7 @@ module Terminfo::Expansion
           end
         when '!'.ord, '~'.ord # %! %~
           # unary operations (logical and bit complement): push(op pop())
-          case byte
+          case op = read_byte!(io)
           when '!'.ord
             Token::Unary.new :logical_not
           when '~'.ord
@@ -329,6 +352,8 @@ module Terminfo::Expansion
             raise "unreachable!"
           end
         when 'i'.ord # %i
+          io.skip(1) # skip i
+
           # add 1 to first two parameters (for ANSI terminals)
           Token::IncTwoFirstParams.new
         when '?'.ord, 't'.ord, 'e'.ord, ';'.ord # %? expr %t thenpart %e elsepart %;
@@ -339,7 +364,7 @@ module Terminfo::Expansion
           # It is possible to form else-if's a la Algol 68:
           #   %? c1 %t b1 %e c2 %t b2 %e c3 %t b3 %e c4 %t b4 %e %;
           # where ci are conditions, bi are bodies.
-          case byte
+          case ctrl_flow = read_byte!(io)
           when '?'.ord
             Token::Conditionnal.new :if
           when 't'.ord
@@ -352,10 +377,6 @@ module Terminfo::Expansion
             raise "unreachable!"
           end
         else # probably a format string
-          # go back to current byte (kindof)
-          # FIXME: remove this hack
-          io.pos = io.pos - 1
-
           # %[[:]flags][width[.precision]][doxXs]
           # as in printf, flags are [-+#] and space. Use a ':' to allow the next
           # character to be a '-' flag, avoiding interpreting "%-" as an operator
@@ -386,11 +407,6 @@ module Terminfo::Expansion
           end
         end
       else
-        # go back to current byte (kindof)
-        # FIXME: remove this hack
-        #    Pb is: current byte has been consumed by `read_byte` (in cond of `case`)
-        io.pos = io.pos - 1
-
         # There is raw text!
         rest = io.to_slice + initial_pos
         if percent_index = rest.index '%'.ord
