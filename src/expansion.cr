@@ -214,7 +214,6 @@ module Terminfo::Expansion
           else
             raise Error::InvalidVariableName.new byte
           end
-
         when 'g'.ord # %g[a-z]
           io.skip(1) # skip g
 
@@ -224,7 +223,6 @@ module Terminfo::Expansion
           else
             raise Error::InvalidVariableName.new byte
           end
-
         when 'P'.ord # %P[A-Z]
           io.skip(1) # skip P
 
@@ -234,7 +232,6 @@ module Terminfo::Expansion
           else
             raise Error::InvalidVariableName.new byte
           end
-
         when 'g'.ord # %g[A-Z]
           io.skip(1) # skip g
 
@@ -250,9 +247,8 @@ module Terminfo::Expansion
           else
             raise Error::InvalidVariableName.new byte
           end
-
         when '\''.ord # %'c'
-          io.skip(1) # skip '
+          io.skip(1)  # skip '
 
           # char constant c
           byte = read_byte!(io)
@@ -260,7 +256,6 @@ module Terminfo::Expansion
             raise Error::MalformedCharConstant.new
           end
           Token::PushIntConstant.new byte.to_i
-
         when '{'.ord # %{nn}
           io.skip(1) # skip {
 
@@ -284,13 +279,11 @@ module Terminfo::Expansion
             int = String.new(io.to_slice[int_start, int_length]).to_i
             Token::PushIntConstant.new int
           end
-
         when 'l'.ord # %l
           io.skip(1) # skip l
 
           # push strlen(pop())
           Token::Strlen.new
-
         when '+'.ord, '-'.ord, '*'.ord, '/'.ord, 'm'.ord # %+ %- %* %/ %m
           # arithmetic (%m is mod): push(pop() op pop())
           case op = read_byte!(io)
@@ -376,7 +369,9 @@ module Terminfo::Expansion
           else
             raise "unreachable!"
           end
-        else # probably a format string
+        else
+          # probably a format string
+
           # %[[:]flags][width[.precision]][doxXs]
           # as in printf, flags are [-+#] and space. Use a ':' to allow the next
           # character to be a '-' flag, avoiding interpreting "%-" as an operator
