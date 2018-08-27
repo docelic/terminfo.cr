@@ -1,3 +1,7 @@
+## NCurses 6 introduced a terminfo format with 32 bit numbers instead of 16 bits.
+
+Relevant commit: https://github.com/ThomasDickey/ncurses-snapshots/commit/7ac78d357c4ea2d4199a742b195eb4a8ce8dad55#diff-2c0786db969084ba9e087d82f8275e0bR85
+
 ## For param strings
 
 Either:
