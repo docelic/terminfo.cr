@@ -191,7 +191,7 @@ module Terminfo::Expansion
           case op = read_byte!(io)
           when 'A'.ord
             Token::Operation::Binary.new :logical_and
-          when '0'.ord
+          when 'O'.ord
             Token::Operation::Binary.new :logical_or
           else
             raise "unreachable!"
