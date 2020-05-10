@@ -38,8 +38,8 @@ Also see [dev notes](Notes.md).
 **TODO**:
 - Parameterized string parser & executor (see references below)
 - Documentation
-- Parser specs
-- Allow to generate a terminfo database from a Terminfo object (to be used in parser specs)
+- Parser specs / param string expander specs
+- Allow to generate a terminfo database from a Terminfo object (to be used in parser specs?)
 - Allow to parse & query/set terminfo extensions (non-standards capabilities)
 - (maybe) Make names database (`src/terminfo/names.cr`) less memory hungry?
 - Find a good API!!! (test small projects for that)

@@ -54,12 +54,12 @@ module Terminfo::Expansion
           io.skip(1) # skip c
 
           # print pop() like %c in printf
-          Token::Format.new :chr
+          Token::PrintFormat.new :chr
         when 's'.ord
           io.skip(1) # skip s
 
           # print pop() like %s in printf
-          Token::Format.new :str
+          Token::PrintFormat.new :str
         when 'p'.ord # %p[1-9]
           io.skip(1) # skip p
 
@@ -118,28 +118,16 @@ module Terminfo::Expansion
           io.skip(1) # skip {
 
           # integer constant nn (any numbers between { and })
-          int_start = io.pos
-          int_length = 0
-          while '0'.ord <= peek_byte!(io) <= '9'.ord
-            int_length += 1
-            io.skip(1)
-          end
+          int = maybe_read_integer!(io)
 
           unless read_byte!(io) == '}'.ord
             raise Error::MalformedIntConstant.new
           end
 
-          if int_length == 0
-            Token::PushIntConstant.new 0
+          if int
+            Token::PushIntConstant.new int
           else
-            # FIXME: use Slice#to_i when available instead of creating a tmp String
-            # int = io.to_slice[int_start, int_length].to_i
-            int_str = String.new(io.to_slice[int_start, int_length])
-            if int = int_str.to_i
-              Token::PushIntConstant.new int
-            else
-              raise Error::InvalidIntConstant.new int_str
-            end
+            Token::PushIntConstant.new 0
           end
         when 'l'.ord # %l
           io.skip(1) # skip l
@@ -237,28 +225,52 @@ module Terminfo::Expansion
           # %[[:]flags][width[.precision]][doxXs]
           # as in printf, flags are [-+#] and space. Use a ':' to allow the next
           # character to be a '-' flag, avoiding interpreting "%-" as an operator
-          fmt_start = io.pos
 
-          flags = Token::Format::Flags.new
-          # TODO: read :
-          # TODO: read flags
-          # TODO: read width
-          # TODO: read . precision
+          flags = Token::PrintFormat::Flags.new
+
+          if peek_byte!(io) == ':'.ord
+            io.skip(1) # skip :
+          end
+
+          valid_print_flags = {'#'.ord, '-'.ord, '+'.ord, ' '.ord}
+          while (flag = peek_byte!(io)) && valid_print_flags.includes?(flag)
+            io.skip(1)
+            case flag
+            when '#'.ord
+              flags.alternate = true
+            when '-'.ord
+              flags.left = true
+            when '+'.ord
+              flags.sign = true
+            when ' '.ord
+              flags.space = true
+            end
+          end
+
+          flags.width = maybe_read_integer!(io)
+
+          # read precision
+          # FIXME: What does the precision mean in this case? Since we don't have floats..
+          if peek_byte!(io) == '.'.ord
+            io.skip(1)
+            flags.precision = maybe_read_integer!(io)
+          end
+          p! flags
 
           # read doxXs
+          # NOTE: on the simple formats %s and %c, this is already handled in the
+          # %-case as shortcuts to create a Token::PrintFormat without flags.
           case format_byte = read_byte!(io)
           when 'd'.ord
-            Token::Format.new :dec, flags: flags
+            Token::PrintFormat.new :dec, flags
           when 'o'.ord
-            Token::Format.new :oct, flags: flags
+            Token::PrintFormat.new :oct, flags
           when 'x'.ord
-            Token::Format.new :hex, flags: flags
+            Token::PrintFormat.new :hex, flags
           when 'X'.ord
-            Token::Format.new :big_hex, flags: flags
+            Token::PrintFormat.new :big_hex, flags
           when 's'.ord
-            # FIXME: huh I alread have a `when 's'.ord` at the beginning of
-            # the % case block..
-            Token::Format.new :str, flags: flags
+            Token::PrintFormat.new :str, flags
           else
             raise Error::InvalidFormatString.new "At pos #{io.pos} format is '#{format_byte.chr}' (#{format_byte})"
           end
@@ -283,6 +295,26 @@ module Terminfo::Expansion
 
     private def peek_byte!(io)
       io.peek[0]? || raise IO::EOFError.new
+    end
+
+    private def maybe_read_integer!(io)
+      int_start = io.pos
+      int_length = 0
+      while '0'.ord <= peek_byte!(io) <= '9'.ord
+        int_length += 1
+        io.skip(1)
+      end
+
+      return nil if int_length == 0
+
+      # FIXME?: use Slice#to_i when available instead of creating a tmp String
+      # int = io.to_slice[int_start, int_length].to_i
+      int_str = String.new(io.to_slice[int_start, int_length])
+      if int = int_str.to_i?
+        return int
+      else
+        raise Error::InvalidIntConstant.new int_str
+      end
     end
   end
 end

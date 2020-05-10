@@ -100,24 +100,24 @@ module Terminfo::Expansion
   class Token::PushStrlen < Token
   end
 
-  class Token::Format < Token
+  class Token::PrintFormat < Token
     class Flags
       property alternate = false
       property left = false
       property sign = false
       property space = false
-      property width : Int32?
-      property precision : Int32?
+      property width : Int32? = nil
+      property precision : Int32? = nil
     end
 
     enum Format
-      Dec
-      Oct
-      Hex
-      BigHex
+      Dec    # 236 : 236
+      Oct    # 236 : 354
+      Hex    # 236 : ec
+      BigHex # 236 : EC
+      Uni    # like Dec but as a UInt32
+      Chr    # 126 : ~
       Str
-      Chr
-      Uni
     end
 
     getter format, flags
