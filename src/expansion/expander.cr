@@ -1,161 +1,25 @@
 # based on https://github.com/meh/rust-terminfo/blob/master/src/expand.rs
 # and https://stebalien.github.io/doc/term/src/term/terminfo/parm.rs.html
 
+require "./errors"
+require "./tokens"
+
 module Terminfo::Expansion
-  # ---- Tokens
-
-  class Token
-  end
-
-  class Token::Binary < Token
-    enum Op
-      Add
-      Substract
-      Multiply
-      Divide
-      Remainder
-      And
-      Or
-      Xor
-      Equal
-      Greater
-      Lesser
-      LogicalAnd
-      LogicalOr
+  abstract struct Parameter
+    def self.from(str : String)
+      StringParameter.new str
     end
 
-    getter op
-
-    def initialize(@op : Op)
+    def self.from(num : Int)
+      NumberParameter.new num
     end
   end
 
-  class Token::Unary < Token
-    enum Op
-      LogicalNot
-      BitComplement
-    end
+  record StringParameter, value : String
+  record NumberParameter, value : Int32
 
-    getter op
-
-    def initialize(@op : Op)
-    end
-  end
-
-  class Token::RawText < Token
-    getter text
-
-    def initialize(@text : Bytes)
-    end
-  end
-
-  class Token::Conditionnal < Token
-    enum Kind
-      If
-      Then
-      Else
-      EndIf
-    end
-
-    getter kind
-
-    def initialize(@kind : Kind)
-    end
-  end
-
-  class Token::IncTwoFirstParams < Token
-  end
-
-  enum GetSetVarWhere
-    Dynamic
-    Static
-  end
-
-  class Token::GetVar < Token
-    getter name, where
-
-    def initialize(@name : UInt8, from @where : GetSetVarWhere)
-    end
-  end
-
-  class Token::SetVar < Token
-    getter name, where
-
-    def initialize(@name : UInt8, to @where : GetSetVarWhere)
-    end
-  end
-
-  class Token::PushParameter < Token
-    getter num : UInt8
-
-    def initialize(name : UInt8)
-      @num = name - '1'.ord # to get num:0 for name:'1'
-    end
-  end
-
-  class Token::PushIntConstant < Token
-    getter value
-
-    def initialize(@value : Int32)
-    end
-  end
-
-  class Token::FormattedPrint < Token
-    class Flags
-      property alternate = false
-      property left = false
-      property sign = false
-      property space = false
-      property width : Int32?
-      property precision : Int32?
-    end
-
-    enum Format
-      Dec
-      Oct
-      Hex
-      BigHex
-      Str
-      Chr
-      Uni
-    end
-
-    getter format, flags
-
-    def initialize(@format : Format, @flags : Flags? = nil)
-    end
-  end
-
-  class Token::Strlen < Token
-  end
-
-  # ---- Exceptions
-
-  class Error < Exception
-    class InvalidVariableName < Error
-      def initialize(@byte : UInt8)
-        super "Invalid variable name '#{@byte}'"
-      end
-    end
-
-    class InvalidParameterNum < Error
-      def initialize(@byte : UInt8)
-        super "Invalid parameter num '#{@byte}'"
-      end
-    end
-
-    class InvalidFormatString < Error
-    end
-
-    class MalformedIntConstant < Error
-    end
-
-    class MalformedCharConstant < Error
-    end
-  end
-
-  # ---- Expander
-
+  # TODO: doc
+  # blablabla
   class Expander
     def expand(param_str : Bytes, *args)
       # let's start by parsing the param string to AST nodes
@@ -384,7 +248,7 @@ module Terminfo::Expansion
           # TODO: read . precision
 
           # read doxXs
-          case byte = io.read_byte
+          case format_byte = read_byte!(io)
           when 'd'.ord
             Token::FormattedPrint.new :dec, flags: flags
           when 'o'.ord
@@ -398,7 +262,7 @@ module Terminfo::Expansion
             # the % case block..
             Token::FormattedPrint.new :str, flags: flags
           else
-            raise Error::InvalidFormatString.new
+            raise Error::InvalidFormatString.new "At pos #{io.pos} format is '#{format_byte.chr}' (#{format_byte})"
           end
         end
       else
