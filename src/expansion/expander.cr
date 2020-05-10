@@ -69,45 +69,39 @@ module Terminfo::Expansion
           else
             raise Error::InvalidParameterNum.new byte
           end
-        when 'P'.ord # %P[a-z]
+        when 'P'.ord # %P[a-z] / %P[A-Z]
           io.skip(1) # skip P
 
-          # set dynamic variable [a-z] to pop()
-          if 'a'.ord <= (byte = read_byte!(io)) <= 'z'.ord
-            Token::SetVar.new name: byte, to: :dynamic
+          # read var name
+          var_byte = read_byte!(io)
+
+          if 'a'.ord <= var_byte <= 'z'.ord
+            # set dynamic variable [a-z] to pop()
+            Token::SetVar.new index: (var_byte - 'a'.ord), to: :dynamic
+          elsif 'A'.ord <= var_byte <= 'Z'.ord
+            # set static variable [A-Z] to pop()
+            Token::SetVar.new index: (var_byte - 'A'.ord), to: :static
           else
-            raise Error::InvalidVariableName.new byte
+            raise Error::InvalidVariableName.new var_byte
           end
-        when 'g'.ord # %g[a-z]
+        when 'g'.ord # %g[a-z] / %g[A-Z]
           io.skip(1) # skip g
 
-          # get dynamic variable [a-z] and push it
-          if 'a'.ord <= (byte = read_byte!(io)) <= 'z'.ord
-            Token::GetVar.new name: byte, from: :dynamic
-          else
-            raise Error::InvalidVariableName.new byte
-          end
-        when 'P'.ord # %P[A-Z]
-          io.skip(1) # skip P
-
-          # set static variable [a-z] to pop()
-          if 'A'.ord <= (byte = read_byte!(io)) <= 'Z'.ord
-            Token::SetVar.new name: byte, to: :static
-          else
-            raise Error::InvalidVariableName.new byte
-          end
-        when 'g'.ord # %g[A-Z]
-          io.skip(1) # skip g
-
-          # get static variable [a-z] and push it
           # The terms "static" and "dynamic" are misleading. Historically, these
           # are simply two different sets of variables, whose values are not reset
           # between calls to tparm. However, that fact is not documented in other
           # implementations. Relying on it will adversely impact portability to
           # other implementations.
+
           # read var name
-          if 'A'.ord <= (byte = read_byte!(io)) <= 'Z'.ord
-            Token::GetVar.new name: byte, from: :static
+          var_byte = read_byte!(io)
+
+          if 'a'.ord <= var_byte <= 'z'.ord
+            # get dynamic variable [a-z] and push it
+            Token::GetVar.new index: byte, from: :dynamic
+          elsif 'A'.ord <= var_byte <= 'Z'.ord
+            # get static variable [A-Z] and push it
+            Token::GetVar.new index: byte, from: :static
           else
             raise Error::InvalidVariableName.new byte
           end

@@ -67,16 +67,16 @@ module Terminfo::Expansion
   end
 
   class Token::GetVar < Token
-    getter name, where
+    getter index, where
 
-    def initialize(@name : UInt8, from @where : GetSetVarWhere)
+    def initialize(@index : UInt8, from @where : GetSetVarWhere)
     end
   end
 
   class Token::SetVar < Token
-    getter name, where
+    getter index, where
 
-    def initialize(@name : UInt8, to @where : GetSetVarWhere)
+    def initialize(@index : UInt8, to @where : GetSetVarWhere)
     end
   end
 
