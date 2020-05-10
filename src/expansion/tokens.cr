@@ -1,41 +1,47 @@
 module Terminfo::Expansion
-  abstract class Token
+  abstract class Token # TODO?: class → struct
   end
 
-  class Token::Binary < Token
-    enum Op
-      Add
-      Substract
-      Multiply
-      Divide
-      Remainder
-      And
-      Or
-      Xor
-      Equal
-      Greater
-      Lesser
-      LogicalAnd
-      LogicalOr
+  abstract class Token::Operation < Token
+    class Binary < Operation
+      enum Op
+        Add
+        Substract
+        Multiply
+        Divide
+        Remainder
+        And
+        Or
+        Xor
+        Equal
+        Greater
+        Lesser
+        LogicalAnd
+        LogicalOr
+      end
+
+      getter op
+
+      def initialize(@op : Op)
+      end
     end
 
-    getter op
+    class Unary < Operation
+      enum Op
+        LogicalNot
+        BitComplement
+      end
 
-    def initialize(@op : Op)
+      getter op
+
+      def initialize(@op : Op)
+      end
+    end
+
+    class Increment < Operation
     end
   end
 
-  class Token::Unary < Token
-    enum Op
-      LogicalNot
-      BitComplement
-    end
-
-    getter op
-
-    def initialize(@op : Op)
-    end
-  end
 
   class Token::RawText < Token
     getter text
@@ -44,7 +50,7 @@ module Terminfo::Expansion
     end
   end
 
-  class Token::Conditionnal < Token
+  class Token::Conditional < Token
     enum Kind
       If
       Then
@@ -56,9 +62,6 @@ module Terminfo::Expansion
 
     def initialize(@kind : Kind)
     end
-  end
-
-  class Token::IncTwoFirstParams < Token
   end
 
   enum GetSetVarWhere
@@ -81,21 +84,23 @@ module Terminfo::Expansion
   end
 
   class Token::PushParameter < Token
-    getter num : UInt8
+    getter index
 
-    def initialize(name : UInt8)
-      @num = name - '1'.ord # to get num:0 for name:'1'
+    def initialize(@index : UInt8)
     end
   end
 
-  class Token::PushIntConstant < Token
+  class Token::PushIntConstant < Token # FIXME: not always a constant...?
     getter value
 
     def initialize(@value : Int32)
     end
   end
 
-  class Token::FormattedPrint < Token
+  class Token::PushStrlen < Token
+  end
+
+  class Token::Format < Token
     class Flags
       property alternate = false
       property left = false
@@ -119,8 +124,5 @@ module Terminfo::Expansion
 
     def initialize(@format : Format, @flags : Flags? = nil)
     end
-  end
-
-  class Token::Strlen < Token
   end
 end

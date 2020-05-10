@@ -6,23 +6,23 @@ require "./tokens"
 
 module Terminfo::Expansion
   abstract struct Parameter
-    def self.from(str : String)
-      StringParameter.new str
+    def self.from(str : ::String)
+      String.new str
     end
 
     def self.from(num : Int)
-      NumberParameter.new num
+      Number.new num
     end
-  end
 
-  record StringParameter, value : String
-  record NumberParameter, value : Int32
+    record String, value : ::String
+    record Number, value : Int32
+  end
 
   # TODO: doc
   # blablabla
   class Expander
     def expand(param_str : Bytes, *args)
-      # let's start by parsing the param string to AST nodes
+      # let's start by parsing the param string to a list of tokens
       to_tokens param_str
     end
 
@@ -54,18 +54,18 @@ module Terminfo::Expansion
           io.skip(1) # skip c
 
           # print pop() like %c in printf
-          Token::FormattedPrint.new :chr
+          Token::Format.new :chr
         when 's'.ord
           io.skip(1) # skip s
 
           # print pop() like %s in printf
-          Token::FormattedPrint.new :str
+          Token::Format.new :str
         when 'p'.ord # %p[1-9]
           io.skip(1) # skip p
 
           # push i'th parameter
           if '1'.ord <= (byte = read_byte!(io)) <= '9'.ord
-            Token::PushParameter.new name: byte
+            Token::PushParameter.new index: (byte - '1'.ord)
           else
             raise Error::InvalidParameterNum.new byte
           end
@@ -134,27 +134,31 @@ module Terminfo::Expansion
           else
             # FIXME: use Slice#to_i when available instead of creating a tmp String
             # int = io.to_slice[int_start, int_length].to_i
-            int = String.new(io.to_slice[int_start, int_length]).to_i
-            Token::PushIntConstant.new int
+            int_str = String.new(io.to_slice[int_start, int_length])
+            if int = int_str.to_i
+              Token::PushIntConstant.new int
+            else
+              raise Error::InvalidIntConstant.new int_str
+            end
           end
         when 'l'.ord # %l
           io.skip(1) # skip l
 
           # push strlen(pop())
-          Token::Strlen.new
+          Token::PushStrlen.new
         when '+'.ord, '-'.ord, '*'.ord, '/'.ord, 'm'.ord # %+ %- %* %/ %m
           # arithmetic (%m is mod): push(pop() op pop())
           case op = read_byte!(io)
           when '+'.ord
-            Token::Binary.new :add
+            Token::Operation::Binary.new :add
           when '-'.ord
-            Token::Binary.new :substract
+            Token::Operation::Binary.new :substract
           when '*'.ord
-            Token::Binary.new :multiply
+            Token::Operation::Binary.new :multiply
           when '/'.ord
-            Token::Binary.new :divide
+            Token::Operation::Binary.new :divide
           when 'm'.ord
-            Token::Binary.new :remainder
+            Token::Operation::Binary.new :remainder
           else
             raise "unreachable!"
           end
@@ -162,11 +166,11 @@ module Terminfo::Expansion
           # bit operations (AND, OR and exclusive-OR): push(pop() op pop())
           case op = read_byte!(io)
           when '&'.ord
-            Token::Binary.new :and
+            Token::Operation::Binary.new :and
           when '|'.ord
-            Token::Binary.new :or
+            Token::Operation::Binary.new :or
           when '^'.ord
-            Token::Binary.new :xor
+            Token::Operation::Binary.new :xor
           else
             raise "unreachable!"
           end
@@ -174,11 +178,11 @@ module Terminfo::Expansion
           # logical operations: push(pop() op pop())
           case op = read_byte!(io)
           when '='.ord
-            Token::Binary.new :equal
+            Token::Operation::Binary.new :equal
           when '>'.ord
-            Token::Binary.new :greater
+            Token::Operation::Binary.new :greater
           when '<'.ord
-            Token::Binary.new :lesser
+            Token::Operation::Binary.new :lesser
           else
             raise "unreachable!"
           end
@@ -186,9 +190,9 @@ module Terminfo::Expansion
           # logical AND and OR operations (for conditionals)
           case op = read_byte!(io)
           when 'A'.ord
-            Token::Binary.new :logical_and
+            Token::Operation::Binary.new :logical_and
           when '0'.ord
-            Token::Binary.new :logical_or
+            Token::Operation::Binary.new :logical_or
           else
             raise "unreachable!"
           end
@@ -196,9 +200,9 @@ module Terminfo::Expansion
           # unary operations (logical and bit complement): push(op pop())
           case op = read_byte!(io)
           when '!'.ord
-            Token::Unary.new :logical_not
+            Token::Operation::Unary.new :logical_not
           when '~'.ord
-            Token::Unary.new :bit_complement
+            Token::Operation::Unary.new :bit_complement
           else
             raise "unreachable!"
           end
@@ -206,7 +210,7 @@ module Terminfo::Expansion
           io.skip(1) # skip i
 
           # add 1 to first two parameters (for ANSI terminals)
-          Token::IncTwoFirstParams.new
+          Token::Operation::Increment.new
         when '?'.ord, 't'.ord, 'e'.ord, ';'.ord # %? expr %t thenpart %e elsepart %;
           # This forms an if-then-else. The %e elsepart is optional.
           # Usually the %? expr part pushes a value onto the stack, and %t pops
@@ -217,13 +221,13 @@ module Terminfo::Expansion
           # where ci are conditions, bi are bodies.
           case ctrl_flow = read_byte!(io)
           when '?'.ord
-            Token::Conditionnal.new :if
+            Token::Conditional.new :if
           when 't'.ord
-            Token::Conditionnal.new :then
+            Token::Conditional.new :then
           when 'e'.ord
-            Token::Conditionnal.new :else
+            Token::Conditional.new :else
           when ';'.ord
-            Token::Conditionnal.new :end_if
+            Token::Conditional.new :end_if
           else
             raise "unreachable!"
           end
@@ -235,7 +239,7 @@ module Terminfo::Expansion
           # character to be a '-' flag, avoiding interpreting "%-" as an operator
           fmt_start = io.pos
 
-          flags = Token::FormattedPrint::Flags.new
+          flags = Token::Format::Flags.new
           # TODO: read :
           # TODO: read flags
           # TODO: read width
@@ -244,17 +248,17 @@ module Terminfo::Expansion
           # read doxXs
           case format_byte = read_byte!(io)
           when 'd'.ord
-            Token::FormattedPrint.new :dec, flags: flags
+            Token::Format.new :dec, flags: flags
           when 'o'.ord
-            Token::FormattedPrint.new :oct, flags: flags
+            Token::Format.new :oct, flags: flags
           when 'x'.ord
-            Token::FormattedPrint.new :hex, flags: flags
+            Token::Format.new :hex, flags: flags
           when 'X'.ord
-            Token::FormattedPrint.new :big_hex, flags: flags
+            Token::Format.new :big_hex, flags: flags
           when 's'.ord
             # FIXME: huh I alread have a `when 's'.ord` at the beginning of
             # the % case block..
-            Token::FormattedPrint.new :str, flags: flags
+            Token::Format.new :str, flags: flags
           else
             raise Error::InvalidFormatString.new "At pos #{io.pos} format is '#{format_byte.chr}' (#{format_byte})"
           end
@@ -273,11 +277,11 @@ module Terminfo::Expansion
       end
     end
 
-    def read_byte!(io)
+    private def read_byte!(io)
       io.read_byte || raise IO::EOFError.new
     end
 
-    def peek_byte!(io)
+    private def peek_byte!(io)
       io.peek[0]? || raise IO::EOFError.new
     end
   end

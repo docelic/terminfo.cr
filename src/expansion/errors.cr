@@ -15,6 +15,9 @@ module Terminfo::Expansion
     class InvalidFormatString < Error
     end
 
+    class InvalidIntConstant < Error
+    end
+
     class MalformedIntConstant < Error
     end
 
