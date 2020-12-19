@@ -13,6 +13,8 @@ module Terminfo
   end
 
   def self.from_term(term_name)
+    # FIXME: if first dbpath cannot be loaded, it should try the other ones!
+
     unless db_path = Searcher.dbpath_for_term term_name
       raise "No terminfo database found for terminal #{term_name}"
     end

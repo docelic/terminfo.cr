@@ -49,6 +49,8 @@ module Terminfo
       # String sections
       strings = parse_strings_section io, header
 
+      # FIXME: this should build a Compiled::Database instead (which is an
+      # implementation of the "interface" `Database`)
       Database.new(
         names: names,
         booleans: bools,
