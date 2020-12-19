@@ -32,5 +32,5 @@ puts
 puts "--> Terminfo strings capabilities (sorted alphabetically):"
 ti.strings.keys.sort_by(&.long_name).each do |str_cap|
   bytes = ti.strings[str_cap]
-  puts "  #{str_cap.long_name} = #{String.new(bytes).inspect}"
+  puts "  #{str_cap.long_name} (#{str_cap.short_name}) = #{String.new(bytes).inspect}"
 end
